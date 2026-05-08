@@ -1,10 +1,86 @@
-# OpenTelemetry Java/Tomcat Automation
+# OpenTelemetry Java Observability Automation
 
-This workspace contains:
+Python automation project for enabling observability on a Java 8 Spring Boot application running on Apache Tomcat in Ubuntu. The automation performs OpenTelemetry prechecks, configures the OpenTelemetry Java agent, verifies the OpenTelemetry Collector, restarts the application service, validates health after restart, exposes metrics to Prometheus, and provides a Grafana dashboard for golden metrics.
+
+## What This Project Shows
+
+This project demonstrates practical DevOps/SRE observability automation using Python, OpenTelemetry, Prometheus, and Grafana.
+
+It answers a real production-style requirement:
+
+- Check whether the OpenTelemetry Java agent is available.
+- Check whether the OpenTelemetry Collector is installed and running.
+- Configure Tomcat or a Spring Boot systemd service with OpenTelemetry JVM properties.
+- Restart the application safely.
+- Verify that the service is up after restart.
+- Send metrics to Prometheus through the OpenTelemetry Collector.
+- Visualize golden metrics in Grafana.
+
+## Tech Stack
+
+| Area | Technology |
+| --- | --- |
+| Automation | Python 3 |
+| Application Runtime | Java 8 |
+| Framework | Spring Boot |
+| Web/App Server | Apache Tomcat |
+| Operating System | Ubuntu Linux |
+| Observability | OpenTelemetry Java Agent |
+| Telemetry Pipeline | OpenTelemetry Collector |
+| Metrics Backend | Prometheus |
+| Dashboarding | Grafana |
+| Service Management | systemd |
+| Config Format | YAML, JSON |
+
+## Repository Contents
 
 - `otel_tomcat_setup.py`: prechecks, OpenTelemetry Java agent configuration, service restart, and post-restart verification.
 - `otel_collector_prometheus_config.yaml`: sample OpenTelemetry Collector config exposing metrics on port `9464` for Prometheus.
 - `grafana_golden_metrics_dashboard.json`: importable Grafana dashboard for golden metrics from Prometheus.
+
+## Architecture Flow
+
+```text
+Java 8 Spring Boot App on Tomcat
+        |
+        | OpenTelemetry Java Agent
+        v
+OpenTelemetry Collector
+        |
+        | Prometheus exporter on :9464
+        v
+Prometheus
+        |
+        v
+Grafana Golden Metrics Dashboard
+```
+
+## OpenTelemetry Properties Configured
+
+The script configures JVM options such as:
+
+```text
+-javaagent:/opt/opentelemetry/opentelemetry-javaagent.jar
+-Dotel.service.name=<service-name>
+-Dotel.traces.exporter=otlp
+-Dotel.metrics.exporter=otlp
+-Dotel.logs.exporter=none
+-Dotel.exporter.otlp.endpoint=http://localhost:4317
+-Dotel.exporter.otlp.protocol=grpc
+-Dotel.resource.attributes=deployment.environment=prod
+```
+
+For Tomcat, these are written to:
+
+```text
+/var/lib/tomcat9/bin/setenv.sh
+```
+
+For a Spring Boot systemd service, these are written to:
+
+```text
+/etc/systemd/system/<service-name>.service.d/otel.conf
+```
 
 ## Prechecks
 
